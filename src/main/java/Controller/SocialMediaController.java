@@ -21,22 +21,24 @@ public class SocialMediaController {
         this.messageService = new MessageService();
     }
 
-    public void startAPI(){
+    public Javalin startAPI(){
         Javalin app = Javalin.create();
 
         app.post("/rgister", this::postRegisterHandler);
-        app.start(8080);
+
+        return app;
     }
 
     private void postRegisterHandler(Context ctx) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Account account = objectMapper.readValue(ctx.body(), Account.class);
-        Account addedAccount = accountService.addAccount(account);
-        if(addedAccount != null){
+        if(!(account.getPassword().length() < 4 || account.getUsername().length() == 0) || accountService.getAllUsernames().contains(account.getUsername())){
+            Account addedAccount = accountService.addAccount(account);
             ctx.json(objectMapper.writeValueAsString(addedAccount));
             ctx.status(200);
         }else{
             ctx.status(400);
         }
+        
     }
 }

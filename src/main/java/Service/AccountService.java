@@ -1,5 +1,7 @@
 package Service;
 
+import java.util.List;
+
 import DAO.AccountDAO;
 import Model.Account;
 
@@ -17,6 +19,10 @@ public class AccountService {
 
     public Account addAccount(Account account) {
         return accountDAO.insertAccount(account);
+    }
+
+    public List<String> getAllUsernames() {
+        return accountDAO.getAllUsernames();
     }
     
 }

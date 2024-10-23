@@ -3,6 +3,8 @@ package DAO;
 import Model.Account;
 import Util.ConnectionUtil;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AccountDAO {
 
@@ -29,6 +31,24 @@ public class AccountDAO {
         }
 
         return null;
+
+    }
+
+    public List<String>  getAllUsernames() {
+        List<String> arrayList = new ArrayList<>();
+        Connection connection = ConnectionUtil.getConnection();
+        try{
+            String sql = "select (username) from account;";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                arrayList.add(resultSet.getString("username"));
+            }
+
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return arrayList;
 
     }
 }
