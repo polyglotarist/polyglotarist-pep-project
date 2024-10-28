@@ -24,13 +24,13 @@ public class SocialMediaController {
         Javalin app = Javalin.create();
 
         app.post("/register", this::addAccountHandler);
-        app.post("/login", this::getLoginHandler); // Changed to POST
-        app.post("/messages", this::addMessageHandler); // Added message creation endpoint
-        app.get("/messages", this::getAllMessagesHandler);
-        app.get("/message/:{id}", this::getMessageByIdHandler); // Added message retrieval by ID
-        app.delete("/message/:{id}", this::deleteMessageHandler); // Added message deletion by ID
-        app.put("/message/:{id}", this::updateMessageHandler); // Added message update by ID
-        app.get("/users/:userId/messages", this::getMessagesByUserHandler); // Added messages by user
+        // app.post("/login", this::getLoginHandler); // Changed to POST
+        // app.post("/message", this::addMessageHandler); // Added message creation endpoint
+        // app.get("/messages", this::getAllMessagesHandler);
+        // app.get("/message/:{id}", this::getMessageByIdHandler); // Added message retrieval by ID
+        // app.delete("/message/:{id}", this::deleteMessageHandler); // Added message deletion by ID
+        // app.put("/message/:{id}", this::updateMessageHandler); // Added message update by ID
+        // app.get("/users/:userId/messages", this::getMessagesByUserHandler); // Added messages by user
 
         System.out.println("API started.");
         return app;
@@ -42,17 +42,16 @@ public class SocialMediaController {
         Account account = objectMapper.readValue(ctx.body(), Account.class);
         System.out.println("Received account registration request.");
 
-        if (account.getPassword() != null && account.getPassword().length() >= 4 && 
-            account.getUsername() != null && !account.getUsername().isEmpty() && 
-            !accountService.getAllUsernames().contains(account.getUsername())) {
+        if (account.getPassword().length() >= 4 && account.getUsername().length() > 0
+         && accountService.accountExists(account.getUsername()) == false) {
             
             Account addedAccount = accountService.addAccount(account);
             ctx.json(objectMapper.writeValueAsString(addedAccount));
-            ctx.status(201); // Created status
+            ctx.status(200); // Created status
             System.out.println("Account created successfully.");
         } else {
             ctx.status(400);
-            ctx.json("{\"error\":\"Invalid username or password, or username already exists.\"}");
+            // ctx.json(account);
             System.out.println("Invalid account data.");
         }
     }

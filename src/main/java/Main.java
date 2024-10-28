@@ -1,5 +1,7 @@
 
+import DAO.AccountDAO;
 import DAO.MessageDAO;
+import Model.Account;
 import Model.Message;
 
 import java.util.List;
@@ -7,7 +9,14 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         MessageDAO messageDAO = new MessageDAO();
+        AccountDAO accountDAO = new AccountDAO();
         
+        //Test if username exists:
+        String username = "aUsername";
+        String password = "aPassword";
+        Account newAccount = new Account(username, password);
+        Boolean accountExists = accountDAO.accountExists(username);
+        System.out.println(newAccount.toString() + " "+ accountExists);
         // Test adding a new message
         System.out.println("Adding a new message...");
         Message newMessage = new Message(1, "Hello, world!", System.currentTimeMillis() / 1000L); // Replace 1 with a valid user ID

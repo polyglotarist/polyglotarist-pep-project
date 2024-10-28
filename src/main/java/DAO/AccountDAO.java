@@ -47,7 +47,7 @@ public class AccountDAO {
         List<String> usernameList = new ArrayList<>();
         Connection connection = ConnectionUtil.getConnection();
         try {
-            String sql = "SELECT username FROM Account"; // Fixed query syntax
+            String sql = "SELECT username FROM account"; // Fixed query syntax
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -74,7 +74,7 @@ public class AccountDAO {
         Account account = null;
         Connection connection = ConnectionUtil.getConnection();
         try {
-            String sql = "SELECT * FROM Account WHERE username = ?";
+            String sql = "SELECT * FROM account WHERE username = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -99,4 +99,40 @@ public class AccountDAO {
         }
         return account; // Return the found account or null if not found
     }
+    //check if account exists
+    public Boolean accountExists(String username){
+        Boolean result = false;
+        Account account = null;
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sql = "SELECT exists(select username from account where username = ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if(resultSet.next()){
+                Boolean usernameExists = resultSet.getBoolean(1);
+                System.out.println("I am here, the output is: " + usernameExists);
+                if(usernameExists){
+                    result = true;
+                }else{
+                    result = false;
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error retrieving account: " + e.getMessage());
+        } finally {
+            // Ensure the connection is closed after operation
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error closing connection: " + e.getMessage());
+            }
+        }
+        return result;
+    }
+
 }

@@ -32,4 +32,15 @@ public class AccountService {
         Account account = accountDAO.getAccountByUsername(username);
         return account != null && account.getPassword().equals(password);
     }
+
+    public Account getAccountByUsername(String username) {
+        return accountDAO.getAccountByUsername(username);
+    }
+    public Boolean accountExists(String username) {
+        if(accountDAO.accountExists(username)){
+            return true;
+        }
+        return false;
+    }
+    
 }
