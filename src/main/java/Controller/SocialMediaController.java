@@ -24,7 +24,7 @@ public class SocialMediaController {
         Javalin app = Javalin.create();
 
         app.post("/register", this::addAccountHandler);
-        // app.post("/login", this::getLoginHandler); // Changed to POST
+        app.post("/login", this::getLoginHandler); 
         // app.post("/message", this::addMessageHandler); // Added message creation endpoint
         // app.get("/messages", this::getAllMessagesHandler);
         // app.get("/message/:{id}", this::getMessageByIdHandler); // Added message retrieval by ID
@@ -65,8 +65,9 @@ public class SocialMediaController {
 
         boolean isValidUser = accountService.validateUser(loginRequest.getUsername(), loginRequest.getPassword());
         if (isValidUser) {
+            Account account = new Account(loginRequest.getAccount_id(), loginRequest.getUsername(), loginRequest.getPassword());
             ctx.status(200);
-            ctx.json("{\"message\":\"Login successful.\"}");
+            ctx.json(account);
             System.out.println("Login successful for user: " + loginRequest.getUsername());
         } else {
             ctx.status(401);
@@ -110,7 +111,7 @@ public class SocialMediaController {
             ctx.status(200);
             System.out.println("Fetched message with ID: " + messageId);
         } else {
-            ctx.status(404);
+            ctx.status(400);
             ctx.json("{\"error\":\"Message not found.\"}");
             System.out.println("Message not found with ID: " + messageId);
         }
@@ -121,10 +122,10 @@ public class SocialMediaController {
         int messageId = Integer.parseInt(ctx.pathParam("id"));
         boolean isDeleted = messageService.deleteMessage(messageId);
         if (isDeleted) {
-            ctx.status(204); // No content
+            ctx.status(200); // No content
             System.out.println("Deleted message with ID: " + messageId);
         } else {
-            ctx.status(404);
+            ctx.status(400);
             ctx.json("{\"error\":\"Message not found.\"}");
             System.out.println("Message not found with ID: " + messageId);
         }
@@ -143,7 +144,7 @@ public class SocialMediaController {
             ctx.json("{\"message\":\"Message updated successfully.\"}");
             System.out.println("Updated message with ID: " + messageId);
         } else {
-            ctx.status(404);
+            ctx.status(400);
             ctx.json("{\"error\":\"Message not found.\"}");
             System.out.println("Message not found for updating with ID: " + messageId);
         }

@@ -75,14 +75,21 @@ public class AccountDAO {
         Connection connection = ConnectionUtil.getConnection();
         try {
             String sql = "SELECT * FROM account WHERE username = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
-                int accountId = resultSet.getInt("account_id");
-                String password = resultSet.getString("password");
-                account = new Account(accountId, username, password);
+            // ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSet pkeyResultSet = preparedStatement.getGeneratedKeys();
+            ResultSet rs = preparedStatement.executeQuery();
+            if(pkeyResultSet.next()){
+                int generated_account_id = (int) pkeyResultSet.getLong(1);
+                if(rs.next()){
+                    String theUsername = rs.getString("username");
+                    String thePassword = rs.getString("password");
+                    account =  new Account(generated_account_id, theUsername, thePassword);
+
+                }
+               
             }
 
         } catch (SQLException e) {
