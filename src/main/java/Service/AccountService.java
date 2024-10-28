@@ -29,8 +29,12 @@ public class AccountService {
 
     public boolean validateUser(String username, String password) {
         // Validates a user's credentials by checking the DAO
+        Boolean result = false;
         Account account = accountDAO.getAccountByUsername(username);
-        return account != null && account.getPassword().equals(password);
+        if(account != null && account.getPassword().equals(password)){
+            result = true;
+        }
+        return result;
     }
 
     public Account getAccountByUsername(String username) {

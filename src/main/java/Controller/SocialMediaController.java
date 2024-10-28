@@ -65,13 +65,12 @@ public class SocialMediaController {
 
         boolean isValidUser = accountService.validateUser(loginRequest.getUsername(), loginRequest.getPassword());
         if (isValidUser) {
-            Account account = new Account(loginRequest.getAccount_id(), loginRequest.getUsername(), loginRequest.getPassword());
+            // Account account = new Account(loginRequest.getAccount_id(), loginRequest.getUsername(), loginRequest.getPassword());
             ctx.status(200);
-            ctx.json(account);
+            ctx.json(accountService.getAccountByUsername(loginRequest.getUsername()));
             System.out.println("Login successful for user: " + loginRequest.getUsername());
         } else {
             ctx.status(401);
-            ctx.json("{\"error\":\"Invalid username or password.\"}");
             System.out.println("Invalid login attempt.");
         }
     }
