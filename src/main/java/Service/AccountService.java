@@ -7,22 +7,29 @@ import Model.Account;
 
 public class AccountService {
 
-    private AccountDAO accountDAO;
+    private final AccountDAO accountDAO;
 
-    public AccountService(){
+    public AccountService() {
         accountDAO = new AccountDAO();
     }
 
-    public AccountService( AccountDAO accountDAO){
+    public AccountService(AccountDAO accountDAO) {
         this.accountDAO = accountDAO;
     }
 
     public Account addAccount(Account account) {
+        // Inserts a new account into the database via the DAO and returns the added account
         return accountDAO.insertAccount(account);
     }
 
     public List<String> getAllUsernames() {
+        // Retrieves all usernames from the DAO
         return accountDAO.getAllUsernames();
     }
-    
+
+    public boolean validateUser(String username, String password) {
+        // Validates a user's credentials by checking the DAO
+        Account account = accountDAO.getAccountByUsername(username);
+        return account != null && account.getPassword().equals(password);
+    }
 }

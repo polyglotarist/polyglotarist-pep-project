@@ -2,53 +2,101 @@ package DAO;
 
 import Model.Account;
 import Util.ConnectionUtil;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDAO {
 
-    //insert a new account int the db, aka register:
-    public Account insertAccount(Account account){
+    // Insert a new account into the database (register)
+    public Account insertAccount(Account account) {
         Connection connection = ConnectionUtil.getConnection();
-        try{
-            String sql = "insert into Account (username, password) values (?,?)";
+        try {
+            String sql = "INSERT INTO Account (username, password) VALUES (?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-            //write preparedStatement's setString methods:
+            // Set the parameters for the PreparedStatement
             preparedStatement.setString(1, account.getUsername());
             preparedStatement.setString(2, account.getPassword());
 
             preparedStatement.executeUpdate();
             ResultSet pkeyResultSet = preparedStatement.getGeneratedKeys();
-            if(pkeyResultSet.next()){
-                int generated_account_id = (int) pkeyResultSet.getLong(1);
-                return new Account(generated_account_id, account.getUsername(), account.getPassword());
+            if (pkeyResultSet.next()) {
+                int generatedAccountId = pkeyResultSet.getInt(1); // Use getInt for the account ID
+                return new Account(generatedAccountId, account.getUsername(), account.getPassword());
             }
-    
-        }catch(SQLException e){
-            System.out.println(e.getMessage());
+
+        } catch (SQLException e) {
+            System.out.println("Error inserting account: " + e.getMessage());
+        } finally {
+            // Ensure the connection is closed after operation
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error closing connection: " + e.getMessage());
+            }
         }
-
-        return null;
-
+        return null; // Return null if insertion fails
     }
 
-    public List<String>  getAllUsernames() {
-        List<String> arrayList = new ArrayList<>();
+    // Retrieve all usernames from the database
+    public List<String> getAllUsernames() {
+        List<String> usernameList = new ArrayList<>();
         Connection connection = ConnectionUtil.getConnection();
-        try{
-            String sql = "select (username) from account;";
+        try {
+            String sql = "SELECT username FROM Account"; // Fixed query syntax
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
-            while(resultSet.next()){
-                arrayList.add(resultSet.getString("username"));
+            while (resultSet.next()) {
+                usernameList.add(resultSet.getString("username"));
             }
 
-        }catch(SQLException e){
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println("Error retrieving usernames: " + e.getMessage());
+        } finally {
+            // Ensure the connection is closed after operation
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error closing connection: " + e.getMessage());
+            }
         }
-        return arrayList;
+        return usernameList; // Return the list of usernames
+    }
 
+    // Retrieve an account by username
+    public Account getAccountByUsername(String username) {
+        Account account = null;
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sql = "SELECT * FROM Account WHERE username = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                int accountId = resultSet.getInt("account_id");
+                String password = resultSet.getString("password");
+                account = new Account(accountId, username, password);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error retrieving account: " + e.getMessage());
+        } finally {
+            // Ensure the connection is closed after operation
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error closing connection: " + e.getMessage());
+            }
+        }
+        return account; // Return the found account or null if not found
     }
 }
