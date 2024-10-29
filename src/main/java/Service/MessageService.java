@@ -18,7 +18,7 @@ public class MessageService {
 
     public List<Message> getAllMessages() {
         // Retrieves all messages from the DAO
-        return messageDAO.getAllMessages();
+        return messageDAO.getAllMessages(); 
     }
 
     public boolean deleteMessage(int messageId) {

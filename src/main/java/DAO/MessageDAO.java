@@ -46,7 +46,7 @@ public class MessageDAO {
         List<Message> messages = new ArrayList<>();
         Connection connection = ConnectionUtil.getConnection();
         try {
-            String sql = "SELECT * FROM message"; // Adjust table name if necessary
+            String sql = "SELECT * FROM message"; 
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {

@@ -26,9 +26,9 @@ public class SocialMediaController {
 
         app.post("/register", this::addAccountHandler);
         app.post("/login", this::getLoginHandler); 
-        app.post("/messages", this::addMessageHandler); // Added message creation endpoint
-        // app.get("/messages", this::getAllMessagesHandler);
-        // app.get("/message/:{id}", this::getMessageByIdHandler); // Added message retrieval by ID
+        app.post("/messages", this::addMessageHandler); 
+        app.get("/messages", this::getAllMessagesHandler);
+        app.get("/messages/{id}", this::getMessageByIdHandler); 
         // app.delete("/message/:{id}", this::deleteMessageHandler); // Added message deletion by ID
         // app.put("/message/:{id}", this::updateMessageHandler); // Added message update by ID
         // app.get("/users/:userId/messages", this::getMessagesByUserHandler); // Added messages by user
@@ -100,6 +100,9 @@ public class SocialMediaController {
     }
 
     // 4: Our API should be able to retrieve all messages.
+    /**As a user, I should be able to submit a GET request on the endpoint GET localhost:8080/messages.
+- The response body should contain a JSON representation of a list containing all messages retrieved from the database.
+ It is expected for the list to simply be empty if there are no messages. The response status should always be 200, which is the default. */
     private void getAllMessagesHandler(Context ctx) {
         List<Message> messages = messageService.getAllMessages();
         ctx.json(messages);
@@ -107,17 +110,25 @@ public class SocialMediaController {
         System.out.println("Fetched all messages.");
     }
 
-    // 5: Our API should be able to retrieve a message by its ID.
+// 5: Our API should be able to retrieve a message by its ID.
+/*As a user, I should be able to submit a GET request on the endpoint GET localhost:8080/messages/{message_id}.
+- The response body should contain a JSON representation of the message identified by the message_id.
+ It is expected for the response body to simply be empty if there is no such message. 
+ The response status should always be 200, which is the default. */
     private void getMessageByIdHandler(Context ctx) {
         int messageId = Integer.parseInt(ctx.pathParam("id"));
-        Message message = messageService.getMessageById(messageId);
-        if (message != null) {
-            ctx.json(message);
+        Message retrievedMessage = messageService.getMessageById(messageId);
+        Boolean result = false;
+        if(retrievedMessage != null){
+            result = true;
+        }
+
+        if (result) {
             ctx.status(200);
+            ctx.json(retrievedMessage);
             System.out.println("Fetched message with ID: " + messageId);
         } else {
             ctx.status(400);
-            ctx.json("{\"error\":\"Message not found.\"}");
             System.out.println("Message not found with ID: " + messageId);
         }
     }
