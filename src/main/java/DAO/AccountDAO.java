@@ -135,4 +135,65 @@ public class AccountDAO {
         return result;
     }
 
+    public Account getAccountById(int id) {
+         
+        Account account = null;
+        Connection connection = ConnectionUtil.getConnection();
+
+        try{
+            String sql = "select * from account where account_id = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+            preparedStatement.setInt(1, id);
+            
+            ResultSet rs = preparedStatement.executeQuery();
+            while(rs.next()){
+                int accountId = rs.getInt("acount_id");
+                String username = rs.getString("username");
+                String password = rs.getString("password");
+
+                account = new Account(accountId, username, password);
+            }
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+
+        return account;
+    }
+
+    public boolean accountExists(int id) {
+        Boolean result = false;
+        Account account = null;
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sql = "SELECT exists(select account_id from account where account_id = ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if(resultSet.next()){
+                Boolean accountIdExists = resultSet.getBoolean(1);
+                System.out.println("I am here, the output is: " + accountIdExists);
+                if(accountIdExists){
+                    result = true;
+                }else{
+                    result = false;
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error retrieving account: " + e.getMessage());
+        } finally {
+            // Ensure the connection is closed after operation
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                System.out.println("Error closing connection: " + e.getMessage());
+            }
+        }
+        return result;
+    }
+
 }

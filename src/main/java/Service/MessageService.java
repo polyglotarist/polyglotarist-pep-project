@@ -13,7 +13,7 @@ public class MessageService {
     }
 
     public MessageService(MessageDAO messageDAO) {
-        this.messageDAO = messageDAO;
+        this.messageDAO = messageDAO; 
     }
 
     public List<Message> getAllMessages() {

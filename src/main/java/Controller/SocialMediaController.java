@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import Model.Account;
 import Model.Message;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class SocialMediaController {
@@ -25,7 +26,7 @@ public class SocialMediaController {
 
         app.post("/register", this::addAccountHandler);
         app.post("/login", this::getLoginHandler); 
-        // app.post("/message", this::addMessageHandler); // Added message creation endpoint
+        app.post("/messages", this::addMessageHandler); // Added message creation endpoint
         // app.get("/messages", this::getAllMessagesHandler);
         // app.get("/message/:{id}", this::getMessageByIdHandler); // Added message retrieval by ID
         // app.delete("/message/:{id}", this::deleteMessageHandler); // Added message deletion by ID
@@ -76,21 +77,26 @@ public class SocialMediaController {
     }
 
     // 3: Our API should be able to process the creation of new messages.
+    //The creation of the message will be successful if and only if the message_text is not blank, is not over 255 characters,
+    // and posted_by refers to a real, existing user
+
     private void addMessageHandler(Context ctx) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         Message message = objectMapper.readValue(ctx.body(), Message.class);
         System.out.println("Received new message request.");
 
-        try {
-            Message addedMessage = messageService.addMessage(message);
-            ctx.json(objectMapper.writeValueAsString(addedMessage));
-            ctx.status(201); // Created status
+
+        if(message.getMessage_text().length() > 0 && message.getMessage_text().length() <= 255 
+        && accountService.accountExists(message.getPosted_by())){
+            ctx.status(200); // Created status
+            Message newMessage = messageService.addMessage(message);
+            
+            ctx.json(newMessage);
             System.out.println("Message created successfully.");
-        } catch (Exception e) {
+        }else{
             ctx.status(400);
-            ctx.json("{\"error\":\"" + e.getMessage() + "\"}");
-            System.out.println("Error creating message: " + e.getMessage());
         }
+        
     }
 
     // 4: Our API should be able to retrieve all messages.

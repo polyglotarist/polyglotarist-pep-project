@@ -46,5 +46,18 @@ public class AccountService {
         }
         return false;
     }
+
+    public Boolean accountExists(int id) {
+        if(accountDAO.accountExists(id)){
+            return true;
+        }
+        return false;
+    }
+
+    public Account getAccountById(int id) {
+        return accountDAO.getAccountById(id);
+    }
+
+  
     
 }
