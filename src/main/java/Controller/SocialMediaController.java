@@ -29,7 +29,7 @@ public class SocialMediaController {
         app.post("/messages", this::addMessageHandler); 
         app.get("/messages", this::getAllMessagesHandler);
         app.get("/messages/{id}", this::getMessageByIdHandler); 
-        // app.delete("/message/:{id}", this::deleteMessageHandler); // Added message deletion by ID
+        app.delete("/messages/{id}", this::deleteMessageHandler); 
         // app.put("/message/:{id}", this::updateMessageHandler); // Added message update by ID
         // app.get("/users/:userId/messages", this::getMessagesByUserHandler); // Added messages by user
 
@@ -125,16 +125,21 @@ public class SocialMediaController {
     }
 
     // 6: Our API should be able to delete a message identified by a message ID.
+    /*As a User, I should be able to submit a DELETE request on the endpoint DELETE localhost:8080/messages/{message_id}.
+
+- The deletion of an existing message should remove an existing message from the database. 
+If the message existed, the response body should contain the now-deleted message. 
+The response status should be 200, which is the default.
+- If the message did not exist, the response status should be 200, but the response body should be empty.
+ This is because the DELETE verb is intended to be idempotent, ie, multiple calls to the DELETE endpoint should respond 
+ with the same type of response. */
     private void deleteMessageHandler(Context ctx) {
         int messageId = Integer.parseInt(ctx.pathParam("id"));
-        boolean isDeleted = messageService.deleteMessage(messageId);
-        if (isDeleted) {
-            ctx.status(200); // No content
-            System.out.println("Deleted message with ID: " + messageId);
-        } else {
-            ctx.status(400);
-            ctx.json("{\"error\":\"Message not found.\"}");
-            System.out.println("Message not found with ID: " + messageId);
+        Message deletedMessage = messageService.getMessageById(messageId);
+        Boolean isDeleted = messageService.deleteMessage(messageId);
+        ctx.status(200);
+        if(isDeleted){
+            ctx.json(deletedMessage);
         }
     }
 
