@@ -117,19 +117,10 @@ public class SocialMediaController {
  The response status should always be 200, which is the default. */
     private void getMessageByIdHandler(Context ctx) {
         int messageId = Integer.parseInt(ctx.pathParam("id"));
-        Message retrievedMessage = messageService.getMessageById(messageId);
-        Boolean result = false;
+        Message retrievedMessage = messageService.getMessageById(messageId); 
+        ctx.status(200);
         if(retrievedMessage != null){
-            result = true;
-        }
-
-        if (result) {
-            ctx.status(200);
             ctx.json(retrievedMessage);
-            System.out.println("Fetched message with ID: " + messageId);
-        } else {
-            ctx.status(400);
-            System.out.println("Message not found with ID: " + messageId);
         }
     }
 
