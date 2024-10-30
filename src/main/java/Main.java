@@ -41,7 +41,8 @@ public class Main {
         System.out.println("\nUpdating the added message...");
         if (addedMessage != null) {
             addedMessage.setMessage_text("Hello, updated world!");
-            boolean isUpdated = messageDAO.updateMessage(addedMessage);
+            Message aMessage = messageDAO.updateMessage(addedMessage);
+            boolean isUpdated = (aMessage != null? true : false);
             System.out.println("Message updated: " + isUpdated);
             // Verify the update
             Message updatedMessage = messageDAO.getMessageById(addedMessage.getMessage_id());

@@ -26,7 +26,7 @@ public class MessageService {
         return messageDAO.deleteMessage(messageId);
     }
 
-    public boolean updateMessage(Message updatedMessage) {
+    public Message updateMessage(Message updatedMessage) {
         // Updates an existing message and returns true if the update was successful
         return messageDAO.updateMessage(updatedMessage);
     }

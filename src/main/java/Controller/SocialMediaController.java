@@ -1,16 +1,17 @@
 package Controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import Model.Account;
+import Model.Message;
 import Service.AccountService;
 import Service.MessageService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import Model.Account;
-import Model.Message;
-
-import java.sql.SQLException;
-import java.util.List;
 
 public class SocialMediaController {
     private final AccountService accountService;
@@ -30,8 +31,8 @@ public class SocialMediaController {
         app.get("/messages", this::getAllMessagesHandler);
         app.get("/messages/{id}", this::getMessageByIdHandler); 
         app.delete("/messages/{id}", this::deleteMessageHandler); 
-        // app.put("/message/:{id}", this::updateMessageHandler); // Added message update by ID
-        // app.get("/users/:userId/messages", this::getMessagesByUserHandler); // Added messages by user
+        app.patch("/messages/{id}", this::updateMessageHandler); 
+        app.get("/accounts/{account_id}/messages", this::getMessagesByUserHandler); 
 
         System.out.println("API started.");
         return app;
@@ -143,31 +144,56 @@ The response status should be 200, which is the default.
         }
     }
 
-    // 7: Our API should be able to update a message text identified by a message ID.
+// 7: Our API should be able to update a message text identified by a message ID.
+/*As a user, I should be able to submit a PATCH request on the endpoint PATCH localhost:8080/messages/{message_id}.
+The request body should contain a new message_text values to replace the message identified by message_id.
+The request body can not be guaranteed to contain any other information.
+- The update of a message should be successful if and only if the message id already exists and the new message_text is not blank 
+and is not over 255 characters.
+If the update is successful, the response body should contain the full updated message (including message_id, posted_by, message_text,
+and time_posted_epoch), and the response status should be 200, which is the default. 
+The message existing on the database should have the updated message_text.
+- If the update of the message is not successful for any reason, the response status should be 400. (Client error) */
     private void updateMessageHandler(Context ctx) throws JsonProcessingException {
         int messageId = Integer.parseInt(ctx.pathParam("id"));
-        ObjectMapper objectMapper = new ObjectMapper();
-        Message updatedMessage = objectMapper.readValue(ctx.body(), Message.class);
-        updatedMessage.setMessage_id(messageId); // Set the ID for updating
-
-        boolean isUpdated = messageService.updateMessage(updatedMessage);
-        if (isUpdated) {
+        //check if the messageId exists:
+        boolean isValidId = false;
+        Message nonUpdatedMessage = messageService.getMessageById(messageId);
+        if(nonUpdatedMessage.getMessage_id() == messageId){
+            isValidId = true;
+        }
+        //check if new message text is valid: must be not blank and less than 256
+        boolean isValidText = false;
+        String newText = ctx.pathParam("message_text");
+        if(newText.length() > 0 && newText.length() < 256){
+            isValidText = true;
+        }
+        //perform the update if id is valid and text is valid:
+        boolean isUpdated = false;
+        Message theNewMessageObject = nonUpdatedMessage;
+        if(isValidId && isValidText){
+            theNewMessageObject = messageService.updateMessage(theNewMessageObject);
+        }
+        //if update is successful, return status 200 and json of updated message object:
+        if(theNewMessageObject != null){
             ctx.status(200);
-            ctx.json("{\"message\":\"Message updated successfully.\"}");
-            System.out.println("Updated message with ID: " + messageId);
-        } else {
+            ctx.json(theNewMessageObject);
+        }else{
             ctx.status(400);
-            ctx.json("{\"error\":\"Message not found.\"}");
-            System.out.println("Message not found for updating with ID: " + messageId);
         }
     }
 
     // 8: Our API should be able to retrieve all messages written by a particular user.
+    /*As a user, I should be able to submit a GET request on the endpoint GET localhost:8080/accounts/{account_id}/messages.
+- The response body should contain a JSON representation of a list containing all messages posted by a particular user, 
+which is retrieved from the database. It is expected for the list to simply be empty if there are no messages.
+ The response status should always be 200, which is the default. */
+
     private void getMessagesByUserHandler(Context ctx) {
-        int userId = Integer.parseInt(ctx.pathParam("userId"));
-        List<Message> messages = messageService.getMessagesByUser(userId);
+        int accountId = Integer.parseInt(ctx.pathParam("account_id"));
+        List<Message> messages = messageService.getMessagesByUser(accountId);
         ctx.json(messages);
         ctx.status(200);
-        System.out.println("Fetched messages for user ID: " + userId);
+
     }
 }

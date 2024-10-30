@@ -94,17 +94,18 @@ public class MessageDAO {
     }
 
     // Method to update an existing message
-    public boolean updateMessage(Message updatedMessage) {
+    public Message updateMessage(Message updatedMessage) {
         Connection connection = ConnectionUtil.getConnection();
         try {
-            String sql = "UPDATE message SET message_text = ?, time_posted_epoch = ? WHERE message_id = ?";
+           
+            String sql = "UPDATE message SET message_text = ? WHERE message_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, updatedMessage.getMessage_text());
-            preparedStatement.setLong(2, updatedMessage.getTime_posted_epoch());
             preparedStatement.setInt(3, updatedMessage.getMessage_id());
 
-            int rowsAffected = preparedStatement.executeUpdate();
-            return rowsAffected > 0; // Returns true if the message was updated
+            preparedStatement.executeUpdate();
+            Message latestVersionMessageObject = new Message(updatedMessage.getMessage_id(), updatedMessage.getPosted_by(), updatedMessage.getMessage_text(), updatedMessage.getTime_posted_epoch());
+            return latestVersionMessageObject;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -116,7 +117,7 @@ public class MessageDAO {
                 e.printStackTrace();
             }
         }
-        return false;
+        return null;
     }
 
     // Method to get a message by its ID
@@ -152,12 +153,13 @@ public class MessageDAO {
         List<Message> messages = new ArrayList<>();
         Connection connection = ConnectionUtil.getConnection();
         try {
-            String sql = "SELECT * FROM message WHERE posted_by = ?";
+            String sql = "select * from message where posted_by = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1, userId);
             ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
+            while(resultSet.next()) {
                 int messageId = resultSet.getInt("message_id");
+                // int postedBy = resultSet.getInt("posted_by");
                 String messageText = resultSet.getString("message_text");
                 long timePostedEpoch = resultSet.getLong("time_posted_epoch");
                 messages.add(new Message(messageId, userId, messageText, timePostedEpoch));
