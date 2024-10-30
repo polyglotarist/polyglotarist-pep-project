@@ -174,12 +174,13 @@ The message existing on the database should have the updated message_text.
         if(isValidId && isValidText){
             theNewMessageObject.setMessage_text(newText);
             theNewMessageObject = messageService.updateMessage(theNewMessageObject);
-            ctx.status(200);
 
         }
         //if update is successful, return status 200 and json of updated message object:
         if(theNewMessageObject != null && theNewMessageObject.getMessage_text() != nonUpdatedMessage.getMessage_text()){
             ctx.json(theNewMessageObject);
+            ctx.status(200);
+
         }else{
             ctx.status(400);
         }
