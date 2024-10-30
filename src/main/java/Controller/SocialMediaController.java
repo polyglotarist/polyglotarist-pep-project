@@ -162,7 +162,7 @@ The message existing on the database should have the updated message_text.
         if(nonUpdatedMessage != null){
             isValidId = true;
         }
-        //check if new message text is valid: must be not blank and less than 256
+        //check if new message text is valid: must be not be blank and must be less than 256
         boolean isValidText = false;
         String newText = ctx.bodyAsClass(Message.class).getMessage_text();
         if(newText.length() > 0 && newText.length() < 256){
@@ -176,7 +176,7 @@ The message existing on the database should have the updated message_text.
             theNewMessageObject = messageService.updateMessage(theNewMessageObject);
         }
         //if update is successful, return status 200 and json of updated message object:
-        if(theNewMessageObject != null){
+        if(theNewMessageObject != null && theNewMessageObject.getMessage_text() != nonUpdatedMessage.getMessage_text()){
             ctx.status(200);
             ctx.json(theNewMessageObject);
         }else{

@@ -104,8 +104,7 @@ public class MessageDAO {
             preparedStatement.setInt(2, updatedMessage.getMessage_id());
 
             preparedStatement.executeUpdate();
-            Message latestVersionMessageObject = new Message(updatedMessage.getMessage_id(), updatedMessage.getPosted_by(), updatedMessage.getMessage_text(), updatedMessage.getTime_posted_epoch());
-            return latestVersionMessageObject;
+            return new Message(updatedMessage.getMessage_id(), updatedMessage.getPosted_by(), updatedMessage.getMessage_text(), updatedMessage.getTime_posted_epoch());
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
