@@ -155,29 +155,30 @@ and time_posted_epoch), and the response status should be 200, which is the defa
 The message existing on the database should have the updated message_text.
 - If the update of the message is not successful for any reason, the response status should be 400. (Client error) */
     private void updateMessageHandler(Context ctx) throws JsonProcessingException {
+        String newText = ctx.bodyAsClass(Message.class).getMessage_text();
         int messageId = Integer.parseInt(ctx.pathParam("id"));
+        Message nonUpdatedMessage = messageService.getMessageById(messageId);
+        Message theNewMessageObject = nonUpdatedMessage;
+
         //check if the messageId exists:
         boolean isValidId = false;
-        Message nonUpdatedMessage = messageService.getMessageById(messageId);
         if(nonUpdatedMessage != null){
             isValidId = true;
         }
         //check if new message text is valid: must be not be blank and must be less than 256
         boolean isValidText = false;
-        String newText = ctx.bodyAsClass(Message.class).getMessage_text();
         if(newText.length() > 0 && newText.length() < 256){
             isValidText = true;
         }
         //perform the update if id is valid and text is valid:
-        Message theNewMessageObject = nonUpdatedMessage;
         if(isValidId && isValidText){
-            nonUpdatedMessage.setMessage_text(newText);
-            theNewMessageObject = nonUpdatedMessage;
+            theNewMessageObject.setMessage_text(newText);
             theNewMessageObject = messageService.updateMessage(theNewMessageObject);
+            ctx.status(200);
+
         }
         //if update is successful, return status 200 and json of updated message object:
         if(theNewMessageObject != null && theNewMessageObject.getMessage_text() != nonUpdatedMessage.getMessage_text()){
-            ctx.status(200);
             ctx.json(theNewMessageObject);
         }else{
             ctx.status(400);
