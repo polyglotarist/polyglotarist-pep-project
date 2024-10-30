@@ -101,7 +101,7 @@ public class MessageDAO {
             String sql = "UPDATE message SET message_text = ? WHERE message_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, updatedMessage.getMessage_text());
-            preparedStatement.setInt(3, updatedMessage.getMessage_id());
+            preparedStatement.setInt(2, updatedMessage.getMessage_id());
 
             preparedStatement.executeUpdate();
             Message latestVersionMessageObject = new Message(updatedMessage.getMessage_id(), updatedMessage.getPosted_by(), updatedMessage.getMessage_text(), updatedMessage.getTime_posted_epoch());

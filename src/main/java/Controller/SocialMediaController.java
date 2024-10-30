@@ -159,19 +159,20 @@ The message existing on the database should have the updated message_text.
         //check if the messageId exists:
         boolean isValidId = false;
         Message nonUpdatedMessage = messageService.getMessageById(messageId);
-        if(nonUpdatedMessage.getMessage_id() == messageId){
+        if(nonUpdatedMessage != null){
             isValidId = true;
         }
         //check if new message text is valid: must be not blank and less than 256
         boolean isValidText = false;
-        String newText = ctx.pathParam("message_text");
+        String newText = ctx.bodyAsClass(Message.class).getMessage_text();
         if(newText.length() > 0 && newText.length() < 256){
             isValidText = true;
         }
         //perform the update if id is valid and text is valid:
-        boolean isUpdated = false;
         Message theNewMessageObject = nonUpdatedMessage;
         if(isValidId && isValidText){
+            nonUpdatedMessage.setMessage_text(newText);
+            theNewMessageObject = nonUpdatedMessage;
             theNewMessageObject = messageService.updateMessage(theNewMessageObject);
         }
         //if update is successful, return status 200 and json of updated message object:
