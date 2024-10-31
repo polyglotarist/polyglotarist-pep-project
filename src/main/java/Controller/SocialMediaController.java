@@ -32,7 +32,7 @@ public class SocialMediaController {
         app.get("/messages", this::getAllMessagesHandler);
         app.get("/messages/{id}", this::getMessageByIdHandler); 
         app.delete("/messages/{id}", this::deleteMessageHandler); 
-        app.patch("/messages/{id}", this::updateMessageHandler); 
+        app.patch("/messages/{message_id}", this::updateMessageHandler); 
         app.get("/accounts/{account_id}/messages", this::getMessagesByUserHandler); 
 
         System.out.println("API started.");
@@ -157,49 +157,83 @@ The message existing on the database should have the updated message_text.
 - If the update of the message is not successful for any reason, the response status should be 400. (Client error) */
     private void updateMessageHandler(Context ctx) throws JsonProcessingException {
 
-        //retrieve the new text from the ctx object
-        String newText = ctx.bodyAsClass(Message.class).getMessage_text();
-         //check if new message text is valid: must be not be blank and must be less than 256
-         boolean isValidText = false;
-         if(newText != null){
-            if(newText.length() > 0 && newText.length() < 256 ){
-                isValidText = true;
-            }
-         }else if(newText == null){
-            //the newText is null so signal ctx.status(400)
-            ctx.status(400);
-         }
-         
 
-        //retrieve the id from ctx object
-        int messageId = Integer.parseInt(ctx.pathParam("id"));
-        Message nonUpdatedMessage = messageService.getMessageById(messageId);
-        String oldText = nonUpdatedMessage.getMessage_text();
-          //check if the messageId exists:
-          boolean isValidId = false;
-          if(nonUpdatedMessage != null){
-              isValidId = true;
-          }
-        //reference the non updated object temporarily
-        Message theNewMessageObject = nonUpdatedMessage;
+    //Let's try a simpler approach. Commented code below fails updateMessageMessageNotFound
 
-        //perform the update if id is valid and text is valid:
-        if(isValidId && isValidText){
-            //update the text on the non updated message object
-            nonUpdatedMessage.setMessage_text(newText);
-            //pass the Message object with updated messsage_text to the service layer and store in theNewMessageObject:
-            theNewMessageObject = messageService.updateMessage(nonUpdatedMessage);
+    //step1: retrieve what's passed in the ctx object, namely the id, and the newText
+    int retrievedId = Integer.parseInt(ctx.pathParam("message_id"));
+    //step2: validate that the id corresponds to an existing message
+    boolean isValidId = false;
+    if(messageService.getMessageById(retrievedId) != null){
+        isValidId = true;
+    }
+    //step3: validate that the newText passed in is neither blank nor exceeding 255 characters after retrieving it from the passed ctx object
+    String retrievedNewText = ctx.bodyAsClass(Message.class).getMessage_text();
+    boolean isValidText = false;
+    if(retrievedNewText.length() > 0 && retrievedNewText.length() <= 255){
+        isValidText = true;
+    }
+    //step4: set the Message object's message_text to the new text
+    Message oldMessage = messageService.getMessageById(retrievedId);
+    if(isValidId && isValidText){
+        oldMessage.setMessage_text(retrievedNewText);
+    }
+    Message updatedMessage = oldMessage; // after we updated the old message we are labeling it appropriately for clarity
+    //step5: pass the object to the service layer for update
+    Message messageReturnedFromUpdate = messageService.updateMessage(updatedMessage);
+    //step6: ensure that the service layer calls the dao layer with the passed object
+        //done
+    //step7: check that the sql querry updates the existing object's message_text in the database
+        //done
+    //step8: if the update is successful, display status code 200 and a json representation of the updated Message object
+    if(isValidId && isValidText){
+        ctx.status(200);
+        ctx.json(messageReturnedFromUpdate);
+    //step9: display status code 400 if text not valid or id not valid
+    }else {
+        ctx.status(400);
+    }
 
-        }
+        // //retrieve the new text from the ctx object
+        // String newText = ctx.bodyAsClass(Message.class).getMessage_text();
+        //  //check if new message text is valid: must be not be blank and must be less than 256
+        //  boolean isValidText = false;
+        //  if(newText != null){
+        //     if(newText.length() > 0 && newText.length() < 256 ){
+        //         isValidText = true;
+        //     }
+        //  }else if(newText == null){
+        //     //the newText is null so signal ctx.status(400)
+        //     ctx.status(400);
+        //  }  
 
-        //if update is successful, return status 200 and json of updated message object:
-        if(theNewMessageObject != null && theNewMessageObject.getMessage_text() != oldText){
-            ctx.json(theNewMessageObject);
-            ctx.status(200);
+        // //retrieve the id from ctx object
+        // int messageId = Integer.parseInt(ctx.pathParam("id"));
+        // Message nonUpdatedMessage = messageService.getMessageById(messageId);
+        // String oldText = nonUpdatedMessage.getMessage_text();
+        //   //check if the messageId exists:
+        //   boolean isValidId = false;
+        //   if(nonUpdatedMessage != null){
+        //       isValidId = true;
+        //   }
+        // //reference the non updated object temporarily
+        // Message theNewMessageObject = nonUpdatedMessage;
 
-        }else{
-            ctx.status(400);
-        }
+        // //perform the update if id is valid and text is valid:
+        // if(isValidId && isValidText){
+        //     //update the text on the non updated message object
+        //     nonUpdatedMessage.setMessage_text(newText);
+        //     //pass the Message object with updated messsage_text to the service layer and store in theNewMessageObject:
+        //     theNewMessageObject = messageService.updateMessage(nonUpdatedMessage);
+        // }
+        // //if update is successful, return status 200 and json of updated message object:
+        // if(theNewMessageObject != null && theNewMessageObject.getMessage_text() != oldText){
+        //     ctx.json(theNewMessageObject);
+        //     ctx.status(200);
+
+        // }else{
+        //     ctx.status(400);
+        // }
     }
 
     // 8: Our API should be able to retrieve all messages written by a particular user.
