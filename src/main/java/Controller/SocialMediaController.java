@@ -159,7 +159,6 @@ The message existing on the database should have the updated message_text.
 
 
     //Let's try a simpler approach. Commented code below fails updateMessageMessageNotFound
-
     //step1: retrieve what's passed in the ctx object, namely the id, and the newText
     int retrievedId = Integer.parseInt(ctx.pathParam("message_id"));
     //step2: validate that the id corresponds to an existing message
@@ -167,6 +166,7 @@ The message existing on the database should have the updated message_text.
     if(messageService.getMessageById(retrievedId) != null){
         isValidId = true;
     }
+     //step0: store old message_text in a variable to compare with new text later:
     //step3: validate that the newText passed in is neither blank nor exceeding 255 characters after retrieving it from the passed ctx object
     String retrievedNewText = ctx.bodyAsClass(Message.class).getMessage_text();
     boolean isValidText = false;
@@ -175,12 +175,16 @@ The message existing on the database should have the updated message_text.
     }
     //step4: set the Message object's message_text to the new text
     Message oldMessage = messageService.getMessageById(retrievedId);
-    if(isValidId && isValidText){
+    if(retrievedNewText != null && isValidId && isValidText){
         oldMessage.setMessage_text(retrievedNewText);
     }
-    Message updatedMessage = oldMessage; // after we updated the old message we are labeling it appropriately for clarity
+    // after we updated the old message we are labeling it appropriately for clarity
+    Message updatedMessage = oldMessage; 
     //step5: pass the object to the service layer for update
-    Message messageReturnedFromUpdate = messageService.updateMessage(updatedMessage);
+    Message messageReturnedFromUpdate = null;
+    if(updatedMessage != null){
+        messageReturnedFromUpdate = messageService.updateMessage(updatedMessage);
+    }
     //step6: ensure that the service layer calls the dao layer with the passed object
         //done
     //step7: check that the sql querry updates the existing object's message_text in the database
